@@ -11,7 +11,26 @@ import org.codehaus.groovy.transform.GroovyASTTransformation;
 public class ImplicitAssertionsTransformation implements ASTTransformation {
     public void visit(ASTNode[] astNodes, SourceUnit sourceUnit) {
 		for (ClassNode classNode : sourceUnit.getAST().getClasses()) {
-			classNode.visitContents(new ImplicitAssertionsTransformationVisitor(sourceUnit));
+            // Only alter classes that directly or indirectly extend or implement a geb superclass or interface.
+            if (isGebClass(classNode)) {
+                classNode.visitContents(new ImplicitAssertionsTransformationVisitor(sourceUnit));
+            }
 		}
+    }
+    
+    boolean isGebClass(ClassNode classNode) {
+        if (classNode == null) {
+            return false;
+        }
+        if (classNode.getPackageName() != null && classNode.getPackageName().startsWith("geb.")) {
+            return true;
+        }
+        ClassNode[] interfaces = classNode.getInterfaces();
+        for (ClassNode anInterface : interfaces) {
+            if (isGebClass(anInterface)) {
+                return true;
+            }
+        }
+        return isGebClass(classNode.getSuperClass());
     }
 }

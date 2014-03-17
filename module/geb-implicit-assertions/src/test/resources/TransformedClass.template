@@ -1,3 +1,5 @@
+package geb.transform.implicitassertions
+
 class TestClass {
     static at = { false }
 
